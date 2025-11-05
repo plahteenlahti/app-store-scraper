@@ -1,4 +1,4 @@
-# app-store-scraper-ts Implementation Summary
+# @perttu/app-store-scraper Implementation Summary
 
 ## Overview
 
@@ -176,7 +176,7 @@ dist/
 ## File Structure
 
 ```
-app-store-scraper-ts/
+@perttu/app-store-scraper/
 ├── src/
 │   ├── types/              # TypeScript type definitions
 │   │   ├── app.ts          # App & RatingHistogram types
@@ -211,7 +211,7 @@ app-store-scraper-ts/
 ## Usage Example
 
 ```typescript
-import { app, search, collection, category } from 'app-store-scraper-ts';
+import { app, search, collection, category } from '@perttu/app-store-scraper';
 
 // Get app details
 const appData = await app({ id: 553834731 });
@@ -252,7 +252,7 @@ const store = require('app-store-scraper');
 store.app({ id: 123 }).then(console.log);
 
 // New (TypeScript)
-import { app } from 'app-store-scraper-ts';
+import { app } from '@perttu/app-store-scraper';
 const data = await app({ id: 123 });
 console.log(data);
 ```

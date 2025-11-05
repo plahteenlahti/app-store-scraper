@@ -16,13 +16,13 @@ This is a complete TypeScript rewrite of [facundoolano/app-store-scraper](https:
 ## Installation
 
 ```bash
-npm install app-store-scraper-ts
+npm install @perttu/app-store-scraper
 ```
 
 ## Usage
 
 ```typescript
-import { app, search, list, reviews, collection, category } from 'app-store-scraper-ts';
+import { app, search, list, reviews, collection, category } from '@perttu/app-store-scraper';
 
 // Get app details
 const appData = await app({ id: 553834731 });
