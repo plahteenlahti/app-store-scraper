@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-temp-original/
 
 # Build output
 dist/
