@@ -1,7 +1,7 @@
-import type { PrivacyDetails } from '../types/review.js';
+import * as cheerio from 'cheerio';
+import type { PrivacyDetails, PrivacyType } from '../types/review.js';
 import type { PrivacyOptions } from '../types/options.js';
 import { doRequest } from './common.js';
-import { ampApiResponseSchema } from './schemas.js';
 
 /**
  * Retrieves privacy policy details for an app
@@ -20,59 +20,65 @@ export async function privacy(options: PrivacyOptions): Promise<PrivacyDetails> 
     throw new Error('id is required');
   }
 
-  // Step 1: Get the bearer token from the app page
+  // Fetch the app page which contains privacy info in the HTML
   const appPageUrl = `https://apps.apple.com/${country}/app/id${id}`;
   const appPageBody = await doRequest(appPageUrl, requestOptions);
 
-  // Extract bearer token from the page
-  const tokenRegex = /token%22%3A%22([^%]+)%22%7D/;
-  const tokenMatch = appPageBody.match(tokenRegex);
+  // Parse the HTML
+  const $ = cheerio.load(appPageBody);
 
-  if (!tokenMatch || !tokenMatch[1]) {
-    throw new Error('Could not extract bearer token');
-  }
-
-  const token = tokenMatch[1];
-
-  // Step 2: Call the AMP API with the token
-  const ampUrl = `https://amp-api-edge.apps.apple.com/v1/catalog/${country}/apps/${id}?platform=web&fields=privacyDetails&l=en-US`;
-
-  const ampBody = await doRequest(ampUrl, {
-    ...(requestOptions || {}),
-    headers: {
-      Origin: 'https://apps.apple.com',
-      Authorization: `Bearer ${token}`,
-      ...(requestOptions?.headers || {}),
-    },
+  // Find the privacy policy URL from the dialog
+  let privacyPolicyUrl: string | undefined;
+  $('dialog[data-testid="dialog"] a[data-test-id="external-link"]').each((_, el) => {
+    const ariaLabel = $(el).attr('aria-label');
+    if (ariaLabel && ariaLabel.includes('Privacy Policy')) {
+      privacyPolicyUrl = $(el).attr('href');
+      return false; // break the loop
+    }
+    return; // continue to next iteration
   });
 
-  // Parse and validate response with Zod
-  const parsedData = JSON.parse(ampBody) as unknown;
-  const validationResult = ampApiResponseSchema.safeParse(parsedData);
+  // Extract privacy types from the dialog sections
+  const privacyTypes: PrivacyType[] = [];
 
-  if (!validationResult.success) {
-    throw new Error(
-      `Privacy API response validation failed: ${validationResult.error.message}`
-    );
+  // Find all purpose sections (Analytics, App Functionality, etc.)
+  $('dialog[data-testid="dialog"] section.purpose-section').each((_, section) => {
+    const $section = $(section);
+    const purpose = $section.find('h3').text().trim();
+
+    // Find all category items within this purpose
+    $section.find('li.purpose-category').each((_, category) => {
+      const $category = $(category);
+      const categoryName = $category.find('.category-title').text().trim();
+
+      // Extract data types
+      const dataTypes: string[] = [];
+      $category.find('.privacy-data-types li').each((_, li) => {
+        dataTypes.push($(li).text().trim());
+      });
+
+      if (categoryName && dataTypes.length > 0) {
+        privacyTypes.push({
+          privacyType: categoryName,
+          name: categoryName,
+          description: `Used for ${purpose}`,
+          dataCategories: dataTypes,
+          purposes: [purpose],
+        });
+      }
+    });
+  });
+
+  // Build the result
+  const result: PrivacyDetails = {};
+
+  if (privacyPolicyUrl) {
+    result.privacyPolicyUrl = privacyPolicyUrl;
   }
 
-  const response = validationResult.data;
-  const privacyData = response.data?.[0]?.attributes?.privacyDetails;
-
-  if (!privacyData) {
-    return {};
+  if (privacyTypes.length > 0) {
+    result.privacyTypes = privacyTypes;
   }
 
-  return {
-    managePrivacyChoicesUrl: privacyData.managePrivacyChoicesUrl,
-    privacyPolicyUrl: privacyData.privacyPolicyUrl,
-    privacyPolicyText: privacyData.privacyPolicyText,
-    privacyTypes: privacyData.privacyTypes?.map((type) => ({
-      privacyType: type.identifier || type.privacyType || '',
-      name: type.privacyType || '',
-      description: type.description || '',
-      dataCategories: type.dataCategories,
-      purposes: type.purposes,
-    })),
-  };
+  return result;
 }
