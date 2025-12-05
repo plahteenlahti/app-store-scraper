@@ -1,6 +1,6 @@
 {
   "name": "@perttu/app-store-scraper",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Modern TypeScript library to scrape application data from the iTunes/Mac App Store",
   "type": "module",
   "main": "./dist/index.cjs",
