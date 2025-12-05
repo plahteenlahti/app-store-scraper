@@ -19,6 +19,7 @@ export { versionHistory } from './lib/version-history.js';
 export type {
   App,
   RatingHistogram,
+  Ratings,
   Review,
   VersionHistory,
   Suggestion,
@@ -35,7 +36,6 @@ export type {
   SuggestOptions,
   PrivacyOptions,
   VersionHistoryOptions,
-  MemoizeOptions,
   Collection,
   Category,
   Device,

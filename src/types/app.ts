@@ -87,3 +87,13 @@ export interface RatingHistogram {
   /** Number of 5-star ratings */
   5: number;
 }
+
+/**
+ * Ratings response with total count and histogram
+ */
+export interface Ratings {
+  /** Total number of ratings */
+  ratings: number;
+  /** Rating distribution by star count */
+  histogram: RatingHistogram;
+}

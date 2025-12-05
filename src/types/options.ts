@@ -14,8 +14,6 @@ export interface BaseOptions {
   lang?: string;
   /** Custom request options */
   requestOptions?: RequestOptions;
-  /** Rate limit (requests per interval) */
-  throttle?: number;
 }
 
 /**
@@ -122,12 +120,3 @@ export interface VersionHistoryOptions extends Omit<BaseOptions, 'lang'> {
   id: number;
 }
 
-/**
- * Memoization configuration
- */
-export interface MemoizeOptions {
-  /** Time to live in milliseconds (default: 300000 = 5 minutes) */
-  maxAge?: number;
-  /** Maximum cache size (default: 1000) */
-  cacheSize?: number;
-}

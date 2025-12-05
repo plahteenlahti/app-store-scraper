@@ -1,71 +1,67 @@
 import * as cheerio from 'cheerio';
-import type { RatingHistogram } from '../types/app.js';
+import type { Ratings, RatingHistogram } from '../types/app.js';
 import type { RatingsOptions } from '../types/options.js';
 import { doRequest, storeId } from './common.js';
 
 /**
  * Retrieves the rating histogram for an app (1-5 star breakdown)
  * @param options - Options including app id
- * @returns Promise resolving to rating histogram
+ * @returns Promise resolving to ratings with total count and histogram
  *
  * @example
  * ```typescript
- * const histogram = await ratings({ id: 553834731 });
- * // Returns: { 1: 100, 2: 200, 3: 500, 4: 1000, 5: 3000 }
+ * const result = await ratings({ id: 553834731 });
+ * // Returns: { ratings: 4800, histogram: { 1: 100, 2: 200, 3: 500, 4: 1000, 5: 3000 } }
  * ```
  */
-export async function ratings(options: RatingsOptions): Promise<RatingHistogram> {
+export async function ratings(options: RatingsOptions): Promise<Ratings> {
   const { id, country = 'us', requestOptions } = options;
 
   if (!id) {
     throw new Error('id is required');
   }
 
-  const store = storeId(country);
-  const url = `https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=${id}&pageNumber=0&sortOrdering=4&type=Purple+Software`;
+  const storeFront = storeId(country);
+  const url = `https://itunes.apple.com/${country}/customer-reviews/id${id}?displayable-kind=11`;
 
-  const body = await doRequest(url, {
+  const html = await doRequest(url, {
     ...(requestOptions || {}),
     headers: {
-      'X-Apple-Store-Front': `${store},12`,
+      'X-Apple-Store-Front': `${storeFront},12`,
       ...(requestOptions?.headers || {}),
     },
   });
 
-  const $ = cheerio.load(body);
+  if (html.length === 0) {
+    throw new Error('App not found (404)');
+  }
 
-  // Extract ratings from HTML
-  const histogram: RatingHistogram = {
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-  };
+  return parseRatings(html);
+}
 
-  // Try to find rating distribution in the page
-  $('.rating-count').each((_, element) => {
-    const text = $(element).text().trim();
-    const match = text.match(/(\d+)\s*(?:stars?|★)/i);
-    if (match && match[1]) {
-      const stars = parseInt(match[1], 10);
-      const countText = $(element).closest('.rating').find('.total').text().trim();
-      const count = parseInt(countText.replace(/\D/g, ''), 10) || 0;
-      if (stars >= 1 && stars <= 5) {
-        histogram[stars as keyof RatingHistogram] = count;
-      }
-    }
-  });
+function parseRatings(html: string): Ratings {
+  const $ = cheerio.load(html);
 
-  // Alternative selector pattern
-  $('.vote').each((index, element) => {
-    const countText = $(element).find('.total').text().trim();
-    const count = parseInt(countText.replace(/\D/g, ''), 10) || 0;
-    const stars = 5 - index; // Usually displayed in reverse order (5 to 1)
-    if (stars >= 1 && stars <= 5) {
-      histogram[stars as keyof RatingHistogram] = count;
-    }
-  });
+  // Extract total rating count
+  const ratingsMatch = $('.rating-count').text().match(/\d+/);
+  const totalRatings = Array.isArray(ratingsMatch) && ratingsMatch[0]
+    ? parseInt(ratingsMatch[0], 10)
+    : 0;
 
-  return histogram;
+  // Extract ratings by star (displayed from 5 to 1)
+  const ratingsByStar: number[] = $('.vote .total')
+    .map((_, el) => parseInt($(el).text(), 10))
+    .get();
+
+  // Build histogram (convert array index to star rating)
+  const histogram: RatingHistogram = ratingsByStar.reduce<RatingHistogram>(
+    (acc, ratingsForStar, index) => {
+      const starRating = (5 - index) as 1 | 2 | 3 | 4 | 5;
+      acc[starRating] = ratingsForStar;
+      return acc;
+    },
+    { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  );
+
+  return { ratings: totalRatings, histogram };
 }

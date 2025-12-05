@@ -19,7 +19,7 @@ import {
   sort,
   type App,
   type Review,
-  type RatingHistogram,
+  type Ratings,
   type Suggestion,
   type PrivacyDetails,
   type VersionHistory,
@@ -144,15 +144,14 @@ async function testAllMethods() {
     // 6. ratings() - Get rating histogram
     console.log('\n6️⃣  Testing ratings() method...');
     console.log(line);
-    const histogram: RatingHistogram = await ratings({ id: TEST_APP_ID });
+    const ratingsData: Ratings = await ratings({ id: TEST_APP_ID });
     console.log('✅ Rating distribution:');
-    console.log(`   5★: ${histogram[5]}`);
-    console.log(`   4★: ${histogram[4]}`);
-    console.log(`   3★: ${histogram[3]}`);
-    console.log(`   2★: ${histogram[2]}`);
-    console.log(`   1★: ${histogram[1]}`);
-    const total = histogram[1] + histogram[2] + histogram[3] + histogram[4] + histogram[5];
-    console.log(`   Total: ${total} ratings`);
+    console.log(`   Total: ${ratingsData.ratings} ratings`);
+    console.log(`   5★: ${ratingsData.histogram[5]}`);
+    console.log(`   4★: ${ratingsData.histogram[4]}`);
+    console.log(`   3★: ${ratingsData.histogram[3]}`);
+    console.log(`   2★: ${ratingsData.histogram[2]}`);
+    console.log(`   1★: ${ratingsData.histogram[1]}`);
 
     // 7. similar() - Get similar apps
     console.log('\n7️⃣  Testing similar() method...');

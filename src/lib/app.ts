@@ -43,8 +43,8 @@ export async function app(options: AppOptions): Promise<App> {
   // Optionally include rating histogram
   if (includeRatings) {
     try {
-      const histogram = await ratings({ id: appData.id, country, requestOptions });
-      appData.histogram = histogram;
+      const ratingsData = await ratings({ id: appData.id, country, requestOptions });
+      appData.histogram = ratingsData.histogram;
     } catch (error) {
       // Ratings might not be available for all apps
       // Continue without histogram rather than failing

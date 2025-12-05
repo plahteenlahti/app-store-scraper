@@ -10,8 +10,9 @@ This is a complete TypeScript rewrite of [facundoolano/app-store-scraper](https:
 - 🔄 **Modern dependencies** (no deprecated packages)
 - 📦 **Dual ESM/CJS support** for maximum compatibility
 - 🌍 **Multi-region support** with 140+ country codes
-- ⚡ **Rate limiting** and memoization support
 - 🎨 **Tree-shakeable** exports for optimal bundle size
+
+> **Want rate limiting or memoization?** See this blog post: [Throttling and memoizing App Store scraper calls](https://perttu.dev/articles/throttling-and-memoing-app-store-scraping)
 
 ## Installation
 
