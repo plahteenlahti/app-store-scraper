@@ -12,7 +12,7 @@ This is a complete TypeScript rewrite of [facundoolano/app-store-scraper](https:
 - 🌍 **Multi-region support** with 140+ country codes
 - 🎨 **Tree-shakeable** exports for optimal bundle size
 
-> **Want rate limiting or memoization?** See our guide: [Adding Rate Limiting and Memoization](docs/rate-limiting-and-memoization.md)
+> **Want rate limiting or memoization?** See this blog post: [Throttling and memoizing App Store scraper calls](https://perttu.dev/articles/throttling-and-memoing-app-store-scraping)
 
 ## Installation
 

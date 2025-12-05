@@ -25,6 +25,8 @@ export async function suggest(options: SuggestOptions): Promise<Suggestion[]> {
   const url = `https://search.itunes.apple.com/WebObjects/MZSearchHints.woa/wa/hints?clientApplication=Software&term=${encodeURIComponent(term)}`;
 
   const body = await doRequest(url, requestOptions);
+  console.log('Response body length:', body.length);
+  console.log('Response body preview:', body.substring(0, 500));
 
   const parser = new XMLParser({
     ignoreAttributes: false,
@@ -32,27 +34,33 @@ export async function suggest(options: SuggestOptions): Promise<Suggestion[]> {
   });
 
   const parsedData = parser.parse(body) as unknown;
+  console.log('Parsed data:', JSON.stringify(parsedData, null, 2));
 
   // Validate response with Zod
   const validationResult = suggestResponseSchema.safeParse(parsedData);
 
   if (!validationResult.success) {
+    console.log('Validation error:', validationResult.error.message);
     throw new Error(
       `Suggest API response validation failed: ${validationResult.error.message}`
     );
   }
 
   const result = validationResult.data;
+  console.log('Validated result:', JSON.stringify(result, null, 2));
 
   // Navigate the plist structure to extract suggestions
   const arrayData = result.plist?.dict?.array;
+  console.log('Array data:', JSON.stringify(arrayData, null, 2));
 
   // If array is a string or doesn't have dict, return empty
   if (!arrayData || typeof arrayData === 'string' || !arrayData.dict) {
+    console.log('No dict found in array data, returning empty');
     return [];
   }
 
   const dicts = arrayData.dict || [];
+  console.log('Dicts:', JSON.stringify(dicts, null, 2));
 
   const suggestions: Suggestion[] = [];
 
@@ -64,5 +72,6 @@ export async function suggest(options: SuggestOptions): Promise<Suggestion[]> {
     }
   }
 
+  console.log('Final suggestions:', suggestions);
   return suggestions;
 }
