@@ -14,8 +14,9 @@ function extractScreenshotUrl(srcset: string): string | null {
   const entries = srcset.split(',').map(entry => {
     const parts = entry.trim().split(/\s+/);
     const url = parts[0];
-    const widthMatch = parts[1]?.match(/(\d+)w/);
-    const width = widthMatch ? parseInt(widthMatch[1], 10) : 0;
+    const widthPart = parts[1];
+    const widthMatch = widthPart?.match(/(\d+)w/);
+    const width = widthMatch?.[1] ? parseInt(widthMatch[1], 10) : 0;
     return { url, width };
   });
 

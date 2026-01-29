@@ -44,9 +44,11 @@ describe('screenshots', () => {
       const screenshotUrl = result.screenshots[0];
       expect(screenshotUrl).toBeDefined();
 
-      const response = await fetch(screenshotUrl, { method: 'HEAD' });
-      expect(response.ok).toBe(true);
-      expect(response.headers.get('content-type')).toMatch(/image\//);
+      if (screenshotUrl) {
+        const response = await fetch(screenshotUrl, { method: 'HEAD' });
+        expect(response.ok).toBe(true);
+        expect(response.headers.get('content-type')).toMatch(/image\//);
+      }
     });
   });
 
@@ -89,9 +91,11 @@ describe('screenshots', () => {
 
       expect(screenshotUrl).toBeDefined();
 
-      const response = await fetch(screenshotUrl, { method: 'HEAD' });
-      expect(response.ok).toBe(true);
-      expect(response.headers.get('content-type')).toMatch(/image\//);
+      if (screenshotUrl) {
+        const response = await fetch(screenshotUrl, { method: 'HEAD' });
+        expect(response.ok).toBe(true);
+        expect(response.headers.get('content-type')).toMatch(/image\//);
+      }
     });
 
     it('should return screenshot arrays are always defined', { timeout: 15000 }, async () => {
