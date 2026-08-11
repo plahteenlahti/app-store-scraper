@@ -31,9 +31,11 @@ describe('screenshots', () => {
       expect(result.screenshots.length).toBeGreaterThan(0);
 
       // Verify the screenshot URLs are valid
+      // Apple's scraped CDN URLs end in a render-transform suffix (e.g. 320x480bb.jpg),
+      // not necessarily .png, so accept the image formats Apple actually serves.
       result.screenshots.forEach((url) => {
         expect(url).toMatch(/^https:\/\/is\d+-ssl\.mzstatic\.com/);
-        expect(url).toMatch(/\.png$/);
+        expect(url).toMatch(/\.(png|jpe?g|webp)$/i);
       });
     });
 
