@@ -69,8 +69,9 @@ export async function reviews(options: ReviewsOptions): Promise<Review[]> {
   // Extract entries (can be single object or array)
   const entries = ensureArray(data.feed?.entry);
 
-  // Skip the first entry as it's typically app metadata
-  const reviewEntries = entries.slice(1);
+  // Filter to only include actual reviews (entries with im:rating)
+  // Note: Using slice(1) was incorrect as not all feeds have app metadata as first entry
+  const reviewEntries = entries.filter((entry) => entry['im:rating']?.label);
 
   return reviewEntries.map((entry) => ({
     id: entry.id?.label || '',
@@ -81,5 +82,7 @@ export async function reviews(options: ReviewsOptions): Promise<Review[]> {
     title: entry.title?.label || '',
     text: entry.content?.label || '',
     updated: entry.updated?.label || '',
+    voteSum: parseInt(entry['im:voteSum']?.label || '0', 10),
+    voteCount: parseInt(entry['im:voteCount']?.label || '0', 10),
   }));
 }

@@ -109,6 +109,16 @@ export const reviewEntrySchema = z.object({
       label: z.string().optional(),
     })
     .optional(),
+  'im:voteSum': z
+    .object({
+      label: z.string().optional(),
+    })
+    .optional(),
+  'im:voteCount': z
+    .object({
+      label: z.string().optional(),
+    })
+    .optional(),
   title: z
     .object({
       label: z.string().optional(),
