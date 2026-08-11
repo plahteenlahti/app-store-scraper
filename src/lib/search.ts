@@ -1,10 +1,16 @@
 import type { App } from '../types/app.js';
 import type { SearchOptions } from '../types/options.js';
 import { doRequest, cleanApp } from './common.js';
-import { iTunesLookupResponseSchema } from './schemas.js';
+import { iTunesLookupResponseSchema, type ITunesAppResponse } from './schemas.js';
 
 /**
- * Searches for apps in the App Store
+ * Searches for apps in the App Store.
+ *
+ * Pagination is implemented client-side: the API is called with a limit of
+ * `page * num` so that the requested page has results, then results are sliced
+ * to the current page. Higher page numbers therefore request more results
+ * from the API.
+ *
  * @param options - Search options including term, pagination, etc.
  * @returns Promise resolving to array of apps or app IDs
  *
@@ -34,13 +40,16 @@ export async function search(options: SearchOptions): Promise<App[] | number[]> 
     throw new Error('term is required');
   }
 
-  // Build query parameters
+  // Request enough results to cover the requested page. The iTunes Search API
+  // has no offset parameter, so we request page * num results and slice client-side.
+  const limit = page * num;
+
   const params = new URLSearchParams({
     term,
     country,
     media: 'software',
     entity: 'software',
-    limit: String(num)
+    limit: String(limit)
   });
 
   if (lang) {
@@ -62,9 +71,8 @@ export async function search(options: SearchOptions): Promise<App[] | number[]> 
 
   const response = validationResult.data;
 
-  // iTunes Search API doesn't support pagination directly, so we handle it client-side
-  // Note: This means we fetch all results up to the limit and slice them
-  const allResults = response.results.filter((app) => app.kind === 'software');
+  // iTunes Search API has no offset; we requested limit = page * num and slice here.
+  const allResults = response.results.filter((app: ITunesAppResponse) => app.kind === 'software');
 
   // Apply pagination
   const start = (page - 1) * num;
@@ -73,10 +81,10 @@ export async function search(options: SearchOptions): Promise<App[] | number[]> 
 
   if (idsOnly) {
     return paginatedResults
-      .map((result) => result.trackId)
-      .filter((id): id is number => id !== undefined);
+      .map((result: ITunesAppResponse) => result.trackId)
+      .filter((id: number | undefined): id is number => id !== undefined);
   }
 
   // Convert to App objects
-  return paginatedResults.map((result) => cleanApp(result));
+  return paginatedResults.map((result: ITunesAppResponse) => cleanApp(result));
 }
