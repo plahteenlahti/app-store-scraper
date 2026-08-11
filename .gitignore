@@ -22,6 +22,9 @@ coverage/
 *~
 .DS_Store
 
+# MCP
+.mcp.json
+
 # Logs
 logs/
 *.log
