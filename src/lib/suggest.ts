@@ -1,7 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import type { Suggestion } from '../types/review.js';
 import type { SuggestOptions } from '../types/options.js';
-import { doRequest } from './common.js';
+import { doRequest, storeId } from './common.js';
 import { suggestResponseSchema } from './schemas.js';
 
 /**
@@ -16,15 +16,24 @@ import { suggestResponseSchema } from './schemas.js';
  * ```
  */
 export async function suggest(options: SuggestOptions): Promise<Suggestion[]> {
-  const { term, requestOptions } = options;
+  const { term, country = 'us', requestOptions } = options;
 
   if (!term) {
     throw new Error('term is required');
   }
 
+  // Apple's hints endpoint returns an empty list unless the storefront is
+  // provided via the X-Apple-Store-Front header.
+  const storeFront = storeId(country);
   const url = `https://search.itunes.apple.com/WebObjects/MZSearchHints.woa/wa/hints?clientApplication=Software&term=${encodeURIComponent(term)}`;
 
-  const body = await doRequest(url, requestOptions);
+  const body = await doRequest(url, {
+    ...(requestOptions || {}),
+    headers: {
+      'X-Apple-Store-Front': `${storeFront},12`,
+      ...(requestOptions?.headers || {}),
+    },
+  });
 
   const parser = new XMLParser({
     ignoreAttributes: false,
