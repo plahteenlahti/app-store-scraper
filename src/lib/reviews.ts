@@ -82,5 +82,7 @@ export async function reviews(options: ReviewsOptions): Promise<Review[]> {
     title: entry.title?.label || '',
     text: entry.content?.label || '',
     updated: entry.updated?.label || '',
+    voteSum: parseInt(entry['im:voteSum']?.label || '0', 10),
+    voteCount: parseInt(entry['im:voteCount']?.label || '0', 10),
   }));
 }

@@ -18,6 +18,10 @@ export interface Review {
   text: string;
   /** Review submission date */
   updated: string;
+  /** Sum of helpful votes (can be negative if more "not helpful" votes) */
+  voteSum: number;
+  /** Total number of votes (helpful + not helpful) */
+  voteCount: number;
 }
 
 /**
