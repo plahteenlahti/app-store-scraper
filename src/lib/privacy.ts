@@ -44,7 +44,7 @@ export async function privacy(options: PrivacyOptions): Promise<PrivacyDetails> 
   // Find all purpose sections (Analytics, App Functionality, etc.)
   $('dialog[data-testid="dialog"] section.purpose-section').each((_, section) => {
     const $section = $(section);
-    const purpose = $section.find('h3').text().trim();
+    const purpose = $section.find('h4').text().trim();
 
     // Find all category items within this purpose
     $section.find('li.purpose-category').each((_, category) => {
