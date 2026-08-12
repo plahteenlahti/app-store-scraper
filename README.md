@@ -80,7 +80,7 @@ const appReviews = await reviews({ id: 553834731, page: 1 });
 ### Methods
 
 - `app()` - Get detailed app information
-- `list()` - Get curated app lists from collections
+- `list()` - Get curated app lists from collections. Returns full `App` objects by default; pass `fullDetail: false` for lightweight `ListApp` records parsed from the chart feed in a single request
 - `search()` - Search for apps by keyword
 - `developer()` - Get all apps from a developer
 - `reviews()` - Get user reviews for an app

@@ -57,24 +57,78 @@ export const iTunesLookupResponseSchema = z.object({
 export type ITunesLookupResponse = z.infer<typeof iTunesLookupResponseSchema>;
 
 /**
- * RSS feed entry schema for lists
+ * RSS feed entry schema for lists.
+ *
+ * The feed carries enough per-entry data to build a lightweight app record
+ * without a follow-up lookup call (name, icon, price, developer, genre, …).
  */
-export const rssFeedEntrySchema = z.object({
-  id: z
-    .object({
-      attributes: z
-        .object({
-          'im:id': z.string().optional(),
+const rssLabelSchema = z.object({ label: z.string().optional() });
+
+export const rssFeedEntrySchema = z
+  .object({
+    'im:name': rssLabelSchema.optional(),
+    'im:image': z
+      .array(
+        z.object({
+          label: z.string().optional(),
+          attributes: z.object({ height: z.string().optional() }).optional(),
         })
-        .optional(),
-    })
-    .optional(),
-});
+      )
+      .optional(),
+    summary: rssLabelSchema.optional(),
+    'im:price': z
+      .object({
+        label: z.string().optional(),
+        attributes: z
+          .object({
+            amount: z.string().optional(),
+            currency: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+    title: rssLabelSchema.optional(),
+    id: z
+      .object({
+        label: z.string().optional(),
+        attributes: z
+          .object({
+            'im:id': z.string().optional(),
+            'im:bundleId': z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+    'im:artist': z
+      .object({
+        label: z.string().optional(),
+        attributes: z.object({ href: z.string().optional() }).optional(),
+      })
+      .optional(),
+    category: z
+      .object({
+        attributes: z
+          .object({
+            'im:id': z.string().optional(),
+            term: z.string().optional(),
+            label: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+    'im:releaseDate': rssLabelSchema.optional(),
+  })
+  .passthrough();
+
+export type RSSFeedEntry = z.infer<typeof rssFeedEntrySchema>;
 
 export const rssFeedSchema = z.object({
   feed: z
     .object({
-      entry: z.array(rssFeedEntrySchema).optional(),
+      // Apple returns a single object (not an array) when the feed has one entry.
+      entry: z
+        .union([rssFeedEntrySchema, z.array(rssFeedEntrySchema)])
+        .optional(),
     })
     .optional(),
 });

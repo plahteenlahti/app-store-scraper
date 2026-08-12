@@ -1,4 +1,4 @@
-export type { App, RatingHistogram, Ratings } from './app.js';
+export type { App, ListApp, RatingHistogram, Ratings } from './app.js';
 export type {
   Review,
   VersionHistory,

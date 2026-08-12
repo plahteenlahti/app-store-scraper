@@ -65,7 +65,12 @@ export interface ListOptions extends BaseOptions {
   category?: Category;
   /** Number of results (default: 50, max: 200) */
   num?: number;
-  /** Whether to fetch full details for each app */
+  /**
+   * When `true` (the default), each app is resolved to a complete {@link App}
+   * via an extra lookup request. When `false`, results are returned as
+   * lightweight {@link ListApp} records parsed straight from the chart feed in
+   * a single request.
+   */
   fullDetail?: boolean;
 }
 
