@@ -27,28 +27,55 @@ export async function versionHistory(options: VersionHistoryOptions): Promise<Ve
   // Parse the HTML
   const $ = cheerio.load(appPageBody);
 
-  // Find all version history entries in the dialog
   const versions: VersionHistory[] = [];
 
-  // Select all article elements within the version history dialog
-  $('dialog[data-testid="dialog"] article.svelte-13339ih').each((_, element) => {
-    const $article = $(element);
+  // The version history lives in a <dialog> as a list of rows, each containing
+  // a `.metadata` block with the version number (<span>) and release date
+  // (<time datetime>), plus release notes in a sibling paragraph. Apple's
+  // markup uses hashed Svelte class names that change on every site rebuild, so
+  // we anchor on the stable semantic `.metadata` + `time[datetime]` signature.
+  //
+  // Identify the version-history dialog by content rather than a fixed index:
+  // it is the dialog containing the most dated metadata rows (other dialogs
+  // contain none).
+  const dialogs = $('dialog').toArray();
+  let dialog: (typeof dialogs)[number] | null = null;
+  let dialogRowCount = 0;
+  for (const element of dialogs) {
+    const rowCount = $(element)
+      .find('div.metadata')
+      .filter((_, row) => $(row).find('time[datetime]').length > 0).length;
+    if (rowCount > dialogRowCount) {
+      dialogRowCount = rowCount;
+      dialog = element;
+    }
+  }
 
-    // Extract release notes from the paragraph
-    const releaseNotes = $article.find('p.svelte-13339ih').text().trim();
+  if (!dialog) {
+    return versions;
+  }
 
-    // Extract version number from h4
-    const versionDisplay = $article.find('h4.svelte-13339ih').text().trim();
+  $(dialog)
+    .find('div.metadata')
+    .each((_, element) => {
+      const $metadata = $(element);
+      const $time = $metadata.find('time[datetime]').first();
+      if (!$time.length) {
+        return;
+      }
 
-    // Extract release date from time element
-    const releaseDateRaw = $article.find('time').attr('datetime') || '';
+      // Version number is the first span in the metadata block (e.g. "26.40")
+      const versionDisplay = $metadata.find('span').first().text().trim();
+      const releaseDate = $time.attr('datetime') || '';
+      // Release notes sit in the row's paragraph, alongside the metadata block
+      const releaseNotes = $metadata.closest('.inner').find('p').first().text().trim();
 
-    versions.push({
-      versionDisplay,
-      releaseDate: releaseDateRaw,
-      releaseNotes: releaseNotes || undefined,
+      versions.push({
+        versionDisplay,
+        releaseDate,
+        releaseNotes: releaseNotes || undefined,
+      });
     });
-  });
 
   return versions;
 }
