@@ -1,7 +1,34 @@
 import type { Collection, Category, Sort } from './constants.js';
 
 export interface RequestOptions {
+  /** Extra headers merged over the defaults */
   headers?: Record<string, string>;
+  /**
+   * Abort the request if it takes longer than this many milliseconds.
+   * Each retry attempt gets its own timeout. Omit for no timeout.
+   */
+  timeout?: number;
+  /**
+   * Number of times to retry after a retryable failure (HTTP 429, HTTP 5xx,
+   * or a network/timeout error). Defaults to 0 (no retries).
+   */
+  retries?: number;
+  /**
+   * Base delay in milliseconds between retries. The delay grows exponentially
+   * (delay * 2^attempt). A `Retry-After` header on a 429/503 response takes
+   * precedence. Defaults to 500.
+   */
+  retryDelay?: number;
+  /**
+   * An AbortSignal to cancel the request. When it aborts, the request rejects
+   * immediately and no further retries are attempted.
+   */
+  signal?: AbortSignal;
+  /**
+   * Custom fetch implementation, e.g. one bound to a proxy agent. Defaults to
+   * the global `fetch`.
+   */
+  fetch?: typeof fetch;
 }
 
 /**

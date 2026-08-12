@@ -7,7 +7,79 @@ import {
 import type { RequestOptions } from '../types/options.js';
 
 /**
- * Makes an HTTP request
+ * Resolves after `ms`, or rejects early if `signal` aborts.
+ */
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason ?? new Error('The operation was aborted'));
+      return;
+    }
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        reject(signal.reason ?? new Error('The operation was aborted'));
+      },
+      { once: true }
+    );
+  });
+}
+
+/**
+ * Combines several abort signals into one that aborts as soon as any of them do.
+ */
+function combineSignals(signals: Array<AbortSignal | undefined>): AbortSignal | undefined {
+  const present = signals.filter((s): s is AbortSignal => Boolean(s));
+  if (present.length === 0) return undefined;
+  if (present.length === 1) return present[0];
+
+  // AbortSignal.any is available on Node 20.3+; fall back to a manual combiner.
+  const anyFn = (AbortSignal as unknown as { any?: (s: AbortSignal[]) => AbortSignal }).any;
+  if (typeof anyFn === 'function') {
+    return anyFn(present);
+  }
+
+  const controller = new AbortController();
+  for (const s of present) {
+    if (s.aborted) {
+      controller.abort(s.reason);
+      break;
+    }
+    s.addEventListener('abort', () => controller.abort(s.reason), { once: true });
+  }
+  return controller.signal;
+}
+
+/**
+ * Reads a `Retry-After` header (seconds or HTTP date) and returns the delay in
+ * milliseconds, or undefined when the header is absent or unparseable.
+ */
+function retryAfterMs(response: Response): number | undefined {
+  const header = response.headers?.get?.('retry-after');
+  if (!header) return undefined;
+
+  const seconds = Number(header);
+  if (!Number.isNaN(seconds)) return Math.max(0, seconds * 1000);
+
+  const date = Date.parse(header);
+  if (!Number.isNaN(date)) return Math.max(0, date - Date.now());
+
+  return undefined;
+}
+
+/**
+ * A response status is worth retrying when Apple is rate-limiting (429) or
+ * having a transient server-side problem (5xx).
+ */
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+/**
+ * Makes an HTTP request, with optional timeout, retries, cancellation, and a
+ * pluggable fetch implementation (see {@link RequestOptions}).
  */
 export async function doRequest(url: string, options?: RequestOptions): Promise<string> {
   const defaultHeaders: Record<string, string> = {
@@ -16,19 +88,57 @@ export async function doRequest(url: string, options?: RequestOptions): Promise<
     'Accept-Language': 'en-US,en;q=0.9',
   };
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      ...defaultHeaders,
-      ...(options?.headers || {}),
-    },
-  });
+  const fetchImpl = options?.fetch ?? fetch;
+  const retries = Math.max(0, options?.retries ?? 0);
+  const retryDelay = options?.retryDelay ?? 500;
+  const userSignal = options?.signal;
 
-  if (!response.ok) {
+  const backoff = (attempt: number): number => retryDelay * 2 ** attempt;
+
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    // Each attempt gets a fresh timeout so a slow first try doesn't eat the
+    // whole budget for the retries.
+    const timeoutSignal =
+      options?.timeout != null ? AbortSignal.timeout(options.timeout) : undefined;
+    const signal = combineSignals([userSignal, timeoutSignal]);
+
+    let response: Response;
+    try {
+      response = await fetchImpl(url, {
+        method: 'GET',
+        headers: {
+          ...defaultHeaders,
+          ...(options?.headers || {}),
+        },
+        ...(signal ? { signal } : {}),
+      });
+    } catch (error) {
+      // A caller-initiated cancel is final — never retry it.
+      if (userSignal?.aborted) throw error;
+      lastError = error;
+      if (attempt < retries) {
+        await sleep(backoff(attempt), userSignal);
+        continue;
+      }
+      throw error;
+    }
+
+    if (response.ok) {
+      return response.text();
+    }
+
+    if (isRetryableStatus(response.status) && attempt < retries) {
+      const wait = retryAfterMs(response) ?? backoff(attempt);
+      await sleep(wait, userSignal);
+      continue;
+    }
+
     throw new Error(`Request failed with status ${response.status}`);
   }
 
-  return response.text();
+  throw lastError ?? new Error('Request failed');
 }
 
 /**
