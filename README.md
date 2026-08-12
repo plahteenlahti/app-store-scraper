@@ -14,6 +14,37 @@ This is a complete TypeScript rewrite of [facundoolano/app-store-scraper](https:
 
 > **Want rate limiting or memoization?** See this blog post: [Throttling and memoizing App Store scraper calls](https://perttu.dev/articles/throttling-and-memoing-app-store-scraping)
 
+## Comparison with the original
+
+This library started as a TypeScript rewrite of [`facundoolano/app-store-scraper`](https://github.com/facundoolano/app-store-scraper) (last published as `0.18.0`), but it's **more than a type conversion**. Apple has changed several endpoints since the original was last updated, and the methods that broke as a result have been repaired here.
+
+| | `@perttu/app-store-scraper` | `facundoolano/app-store-scraper` |
+| --- | --- | --- |
+| Language | TypeScript | JavaScript |
+| Type definitions | Built in | Community `@types` package |
+| Module format | ESM **and** CommonJS | CommonJS only |
+| HTTP client | Native `fetch` | Deprecated [`request`](https://github.com/request/request/issues/3142) |
+| Runtime validation | Yes — [Zod](https://zod.dev) schemas | None |
+| Dependencies | Minimal, no deprecated packages | `request`, `ramda`, `xml2js`, `memoizee`, `throttled-request`, `debug` |
+| Throttling / memoization | Not bundled — see the [post above](https://perttu.dev/articles/throttling-and-memoing-app-store-scraping) | Built in |
+
+### Method status
+
+Every method has been checked against Apple's current endpoints. The ones marked **Fixed** had broken (in the upstream library, or against today's App Store) and were repaired:
+
+| Method | Status | Notes |
+| --- | --- | --- |
+| `app()` | ✅ Working | Falls back to scraping the App Store page for screenshots when the iTunes API returns none |
+| `search()` | 🔧 Fixed | Uses the official iTunes Search API; pagination past page 1 works |
+| `list()` | ✅ Working | |
+| `developer()` | 🔧 Fixed | Repaired lookup and updated schemas |
+| `reviews()` | ✅ Working | Correct rating filtering; includes vote counts |
+| `ratings()` | 🔧 Fixed | Reworked to return the correct histogram |
+| `similar()` | 🔧 Fixed | Rebuilt on native `fetch` and current scraping |
+| `suggest()` | 🔧 Fixed | Repaired against Apple's current hints endpoint |
+| `privacy()` | 🔧 Fixed | Repaired privacy-details scraping |
+| `versionHistory()` | 🔧 Fixed | Repaired against Apple's current endpoint |
+
 ## Installation
 
 ```bash
