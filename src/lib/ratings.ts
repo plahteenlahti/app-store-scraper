@@ -39,13 +39,20 @@ export async function ratings(options: RatingsOptions): Promise<Ratings> {
   return parseRatings(html);
 }
 
-function parseRatings(html: string): Ratings {
+/**
+ * Parses the customer-reviews HTML into a total count and 1-5 star histogram.
+ * Exported for unit testing against captured page fixtures.
+ */
+export function parseRatings(html: string): Ratings {
   const $ = cheerio.load(html);
 
-  // Extract total rating count
-  const ratingsMatch = $('.rating-count').text().match(/\d+/);
-  const totalRatings = Array.isArray(ratingsMatch) && ratingsMatch[0]
-    ? parseInt(ratingsMatch[0], 10)
+  // Extract total rating count.
+  // The label looks like "3,624 Ratings" — match the full number including
+  // thousands separators, then strip them before parsing (a bare /\d+/ would
+  // stop at the first comma and return 3 instead of 3624).
+  const ratingsMatch = $('.rating-count').text().match(/[\d.,]+/);
+  const totalRatings = ratingsMatch?.[0]
+    ? parseInt(ratingsMatch[0].replace(/[.,]/g, ''), 10)
     : 0;
 
   // Extract ratings by star (displayed from 5 to 1)

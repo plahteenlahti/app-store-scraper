@@ -38,8 +38,8 @@ Every method has been checked against Apple's current endpoints. The ones marked
 | `search()` | 🔧 Fixed | Uses the official iTunes Search API; pagination past page 1 works |
 | `list()` | ✅ Working | |
 | `developer()` | 🔧 Fixed | Repaired lookup and updated schemas |
-| `reviews()` | ✅ Working | Correct rating filtering; includes vote counts |
-| `ratings()` | 🔧 Fixed | Reworked to return the correct histogram |
+| `reviews()` | 🔧 Fixed | Uses Apple's XML review feed with a non-browser agent — the JSON feed now returns no entries |
+| `ratings()` | 🔧 Fixed | Reworked to return the correct histogram and a total count that survives thousands separators |
 | `similar()` | 🔧 Fixed | Rebuilt on native `fetch` and current scraping |
 | `suggest()` | 🔧 Fixed | Repaired against Apple's current hints endpoint |
 | `privacy()` | 🔧 Fixed | Repaired privacy-details scraping |
