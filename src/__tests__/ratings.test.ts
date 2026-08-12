@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { ratings, parseRatings } from '../lib/ratings.js';
 
 // Captured from the customer-reviews endpoint (Dark Noise). The total count is
@@ -39,7 +40,7 @@ describe('ratings', () => {
     });
   });
 
-  it('fetches a live histogram for a real app (Dark Noise)', { timeout: 15000 }, async () => {
+  itNetwork('fetches a live histogram for a real app (Dark Noise)', { timeout: 15000 }, async () => {
     const result = await ratings({ id: 1465439395 });
     expect(typeof result.ratings).toBe('number');
     ([1, 2, 3, 4, 5] as const).forEach((star) => {

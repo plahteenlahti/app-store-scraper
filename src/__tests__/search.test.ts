@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { search } from '../lib/search.js';
 
 describe('search', () => {
@@ -8,7 +9,7 @@ describe('search', () => {
     ).rejects.toThrow('term is required');
   });
 
-  it('should search for apps with a valid term', { timeout: 10000 }, async () => {
+  itNetwork('should search for apps with a valid term', { timeout: 10000 }, async () => {
     const results = await search({
       term: 'minecraft',
       num: 5
@@ -25,7 +26,7 @@ describe('search', () => {
     }
   });
 
-  it('should return only IDs when idsOnly is true', { timeout: 10000 }, async () => {
+  itNetwork('should return only IDs when idsOnly is true', { timeout: 10000 }, async () => {
     const results = await search({
       term: 'minecraft',
       num: 5,
@@ -39,7 +40,7 @@ describe('search', () => {
     }
   });
 
-  it('should respect pagination', { timeout: 10000 }, async () => {
+  itNetwork('should respect pagination', { timeout: 10000 }, async () => {
     const page1 = await search({
       term: 'game',
       num: 5,

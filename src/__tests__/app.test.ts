@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { app } from '../lib/app.js';
 
 describe('app', () => {
@@ -8,7 +9,7 @@ describe('app', () => {
     ).rejects.toThrow('Either id or appId is required');
   });
 
-  it('should fetch app by numeric ID', { timeout: 10000 }, async () => {
+  itNetwork('should fetch app by numeric ID', { timeout: 10000 }, async () => {
     // Minecraft app ID
     const result = await app({ id: 479516143 });
 
@@ -20,7 +21,7 @@ describe('app', () => {
     expect(result.url).toBeDefined();
   });
 
-  it('should fetch app by bundle ID', { timeout: 10000 }, async () => {
+  itNetwork('should fetch app by bundle ID', { timeout: 10000 }, async () => {
     // Minecraft bundle ID
     const result = await app({ appId: 'com.mojang.minecraftpe' });
 
@@ -31,7 +32,7 @@ describe('app', () => {
     expect(result.developer).toBeDefined();
   });
 
-  it('should include ratings when ratings option is true', { timeout: 10000 }, async () => {
+  itNetwork('should include ratings when ratings option is true', { timeout: 10000 }, async () => {
     const result = await app({ id: 479516143, ratings: true });
 
     expect(result).toBeDefined();

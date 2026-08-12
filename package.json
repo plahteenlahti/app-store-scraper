@@ -22,6 +22,7 @@
     "build": "tsup",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:network": "RUN_NETWORK_TESTS=1 vitest run",
     "example": "tsx examples/all-methods.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",

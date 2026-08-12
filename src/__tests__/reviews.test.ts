@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { reviews, parseReviews } from '../lib/reviews.js';
 
 // Trimmed capture of the customer-reviews XML (Atom) feed. The first <entry> is
@@ -84,7 +85,7 @@ describe('reviews', () => {
     });
   });
 
-  it('fetches live reviews for a real app (Dark Noise)', { timeout: 15000 }, async () => {
+  itNetwork('fetches live reviews for a real app (Dark Noise)', { timeout: 15000 }, async () => {
     // Apple aggressively rate-limits this feed, so tolerate an empty response;
     // when reviews come back, their shape must be correct.
     const results = await reviews({ id: 1465439395, page: 1 });

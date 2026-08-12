@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { app } from '../lib/app.js';
 
 describe('screenshots', () => {
   // Test with the specified app ID 6756671942 (Bygone - Yesterday's Weather)
   // Note: This app's screenshots are not available via iTunes API but are scraped from the App Store page
   describe('app ID 6756671942 (Bygone - scraped screenshots)', () => {
-    it('should fetch app and return screenshot arrays', { timeout: 15000 }, async () => {
+    itNetwork('should fetch app and return screenshot arrays', { timeout: 15000 }, async () => {
       const result = await app({ id: 6756671942 });
 
       expect(result).toBeDefined();
@@ -23,7 +24,7 @@ describe('screenshots', () => {
       expect(Array.isArray(result.appletvScreenshots)).toBe(true);
     });
 
-    it('should scrape screenshots when iTunes API returns empty arrays', { timeout: 15000 }, async () => {
+    itNetwork('should scrape screenshots when iTunes API returns empty arrays', { timeout: 15000 }, async () => {
       const result = await app({ id: 6756671942 });
 
       // This app has screenshots on the App Store page but not via iTunes API
@@ -39,7 +40,7 @@ describe('screenshots', () => {
       });
     });
 
-    it('should have accessible screenshot URLs from scraping', { timeout: 30000 }, async () => {
+    itNetwork('should have accessible screenshot URLs from scraping', { timeout: 30000 }, async () => {
       const result = await app({ id: 6756671942 });
 
       // Test that the scraped screenshot URL is accessible
@@ -56,7 +57,7 @@ describe('screenshots', () => {
 
   // Test with an app that HAS screenshots (Minecraft)
   describe('app with screenshots (Minecraft)', () => {
-    it('should fetch screenshots for Minecraft app', { timeout: 15000 }, async () => {
+    itNetwork('should fetch screenshots for Minecraft app', { timeout: 15000 }, async () => {
       const result = await app({ id: 479516143 });
 
       expect(result.screenshots).toBeDefined();
@@ -67,7 +68,7 @@ describe('screenshots', () => {
       expect(result.screenshots.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should have valid screenshot URLs', { timeout: 15000 }, async () => {
+    itNetwork('should have valid screenshot URLs', { timeout: 15000 }, async () => {
       const result = await app({ id: 479516143 });
 
       // Validate iPhone screenshots
@@ -85,7 +86,7 @@ describe('screenshots', () => {
       }
     });
 
-    it('should have screenshots that are accessible', { timeout: 30000 }, async () => {
+    itNetwork('should have screenshots that are accessible', { timeout: 30000 }, async () => {
       const result = await app({ id: 479516143 });
 
       // Test at least one screenshot URL is accessible
@@ -100,7 +101,7 @@ describe('screenshots', () => {
       }
     });
 
-    it('should return screenshot arrays are always defined', { timeout: 15000 }, async () => {
+    itNetwork('should return screenshot arrays are always defined', { timeout: 15000 }, async () => {
       const result = await app({ id: 479516143 });
 
       // Even if empty, the arrays should be defined
@@ -111,7 +112,7 @@ describe('screenshots', () => {
   });
 
   describe('screenshot URL structure', () => {
-    it('should return screenshot URLs with proper Apple CDN format', { timeout: 15000 }, async () => {
+    itNetwork('should return screenshot URLs with proper Apple CDN format', { timeout: 15000 }, async () => {
       const result = await app({ id: 479516143 });
 
       const allScreenshots = [
@@ -130,7 +131,7 @@ describe('screenshots', () => {
   });
 
   describe('screenshots for different countries', () => {
-    it('should fetch screenshots regardless of country', { timeout: 15000 }, async () => {
+    itNetwork('should fetch screenshots regardless of country', { timeout: 15000 }, async () => {
       const usResult = await app({ id: 479516143, country: 'us' });
 
       // Screenshots should work regardless of country

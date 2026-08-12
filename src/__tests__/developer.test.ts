@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { developer } from '../lib/developer.js';
 
 describe('developer', () => {
@@ -9,7 +10,7 @@ describe('developer', () => {
     ).rejects.toThrow('devId is required');
   });
 
-  it('should fetch apps by developer ID (Google)', { timeout: 10000 }, async () => {
+  itNetwork('should fetch apps by developer ID (Google)', { timeout: 10000 }, async () => {
     // Google's developer ID
     const results = await developer({ devId: 281956209 });
 
@@ -26,7 +27,7 @@ describe('developer', () => {
     });
   });
 
-  it('should fetch apps by developer ID (Mojang)', { timeout: 10000 }, async () => {
+  itNetwork('should fetch apps by developer ID (Mojang)', { timeout: 10000 }, async () => {
     // Mojang's developer ID (Minecraft creator)
     const results = await developer({ devId: 479516143 });
 
