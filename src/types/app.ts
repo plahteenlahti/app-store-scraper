@@ -73,6 +73,46 @@ export interface App {
 }
 
 /**
+ * A lightweight app record built directly from an RSS chart feed entry.
+ *
+ * Returned by `list()` when `fullDetail` is `false`. It carries only the fields
+ * the feed provides — for the complete {@link App} (size, version, ratings,
+ * screenshots, …) use `list({ fullDetail: true })`, which is the default.
+ */
+export interface ListApp {
+  /** Track ID (numeric identifier) */
+  id: number;
+  /** Bundle identifier (e.g., com.example.app) */
+  appId: string;
+  /** App name/title */
+  title: string;
+  /** App icon URL (largest available in the feed) */
+  icon: string;
+  /** App Store URL */
+  url: string;
+  /** Price in local currency */
+  price: number;
+  /** Currency code (e.g., "USD", "EUR") */
+  currency: string;
+  /** Whether the app is free */
+  free: boolean;
+  /** Short description/summary, when the feed includes one */
+  description?: string;
+  /** Developer name */
+  developer: string;
+  /** Developer App Store URL */
+  developerUrl: string;
+  /** Developer ID (numeric), parsed from the developer URL when available */
+  developerId?: number;
+  /** Primary genre/category name */
+  genre: string;
+  /** Primary genre/category ID */
+  genreId: string;
+  /** Release date (ISO string) */
+  released: string;
+}
+
+/**
  * Rating distribution histogram
  */
 export interface RatingHistogram {

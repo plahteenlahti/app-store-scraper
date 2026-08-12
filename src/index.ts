@@ -18,6 +18,7 @@ export { versionHistory } from './lib/version-history.js';
 // Export types
 export type {
   App,
+  ListApp,
   RatingHistogram,
   Ratings,
   Review,
