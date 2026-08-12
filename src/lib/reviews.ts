@@ -1,9 +1,16 @@
+import * as cheerio from 'cheerio';
 import type { Review } from '../types/review.js';
 import type { ReviewsOptions } from '../types/options.js';
 import { sort as sortConstants } from '../types/constants.js';
-import { doRequest, validateRequiredField, ensureArray } from './common.js';
+import { doRequest, validateRequiredField } from './common.js';
 import { app } from './app.js';
-import { reviewsFeedSchema } from './schemas.js';
+
+// Apple's customer-reviews RSS feed only returns entries for non-browser
+// clients. The shared default User-Agent (a Chrome string) makes the feed
+// respond with metadata but zero entries, so this request overrides it with an
+// iTunes-style agent. The `/json` variant of the feed no longer returns entries
+// at all, so we use `/xml` and parse it with cheerio.
+const REVIEWS_USER_AGENT = 'iTunes/12.11 (Macintosh; OS X 10.15.7)';
 
 /**
  * Retrieves user reviews for an app
@@ -50,39 +57,50 @@ export async function reviews(options: ReviewsOptions): Promise<Review[]> {
     throw new Error('Could not resolve app id');
   }
 
-  const url = `https://itunes.apple.com/${country}/rss/customerreviews/page=${page}/id=${id}/sortby=${sort}/json`;
+  const url = `https://itunes.apple.com/${country}/rss/customerreviews/page=${page}/id=${id}/sortby=${sort}/xml`;
 
-  const body = await doRequest(url, requestOptions);
+  const body = await doRequest(url, {
+    ...(requestOptions || {}),
+    headers: {
+      'User-Agent': REVIEWS_USER_AGENT,
+      ...(requestOptions?.headers || {}),
+    },
+  });
 
-  // Parse and validate response with Zod
-  const parsedData = JSON.parse(body) as unknown;
-  const validationResult = reviewsFeedSchema.safeParse(parsedData);
+  return parseReviews(body);
+}
 
-  if (!validationResult.success) {
-    throw new Error(
-      `Reviews API response validation failed: ${validationResult.error.message}`
-    );
-  }
+/**
+ * Parses the Atom/XML customer-reviews feed into Review objects.
+ * The first entry is sometimes app metadata; real reviews are identified by the
+ * presence of an `im:rating` element, so metadata rows are filtered out.
+ *
+ * Exported for unit testing against captured feed fixtures.
+ */
+export function parseReviews(xml: string): Review[] {
+  const $ = cheerio.load(xml, { xmlMode: true });
 
-  const data = validationResult.data;
+  return $('entry')
+    .toArray()
+    .filter((el) => $(el).children('im\\:rating').first().text().trim() !== '')
+    .map((el) => {
+      const $e = $(el);
+      // Prefer the plain-text body; fall back to the first content element.
+      const text =
+        $e.children('content[type="text"]').first().text().trim() ||
+        $e.children('content').first().text().trim();
 
-  // Extract entries (can be single object or array)
-  const entries = ensureArray(data.feed?.entry);
-
-  // Filter to only include actual reviews (entries with im:rating)
-  // Note: Using slice(1) was incorrect as not all feeds have app metadata as first entry
-  const reviewEntries = entries.filter((entry) => entry['im:rating']?.label);
-
-  return reviewEntries.map((entry) => ({
-    id: entry.id?.label || '',
-    userName: entry.author?.name?.label || '',
-    userUrl: entry.author?.uri?.label || '',
-    version: entry['im:version']?.label || '',
-    score: parseInt(entry['im:rating']?.label || '0', 10),
-    title: entry.title?.label || '',
-    text: entry.content?.label || '',
-    updated: entry.updated?.label || '',
-    voteSum: parseInt(entry['im:voteSum']?.label || '0', 10),
-    voteCount: parseInt(entry['im:voteCount']?.label || '0', 10),
-  }));
+      return {
+        id: $e.children('id').first().text().trim(),
+        userName: $e.find('author > name').first().text().trim(),
+        userUrl: $e.find('author > uri').first().text().trim(),
+        version: $e.children('im\\:version').first().text().trim(),
+        score: parseInt($e.children('im\\:rating').first().text().trim() || '0', 10),
+        title: $e.children('title').first().text().trim(),
+        text,
+        updated: $e.children('updated').first().text().trim(),
+        voteSum: parseInt($e.children('im\\:voteSum').first().text().trim() || '0', 10),
+        voteCount: parseInt($e.children('im\\:voteCount').first().text().trim() || '0', 10),
+      };
+    });
 }
