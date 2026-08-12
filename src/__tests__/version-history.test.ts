@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { versionHistory } from '../lib/version-history.js';
 
 describe('versionHistory', () => {
@@ -9,7 +10,7 @@ describe('versionHistory', () => {
     ).rejects.toThrow('id is required');
   });
 
-  it('should fetch version history for an app (Minecraft)', { timeout: 15000 }, async () => {
+  itNetwork('should fetch version history for an app (Minecraft)', { timeout: 15000 }, async () => {
     const results = await versionHistory({ id: 479516143 });
 
     expect(Array.isArray(results)).toBe(true);
@@ -26,7 +27,7 @@ describe('versionHistory', () => {
     });
   });
 
-  it('should include release notes when available (Instagram)', { timeout: 15000 }, async () => {
+  itNetwork('should include release notes when available (Instagram)', { timeout: 15000 }, async () => {
     const results = await versionHistory({ id: 389801252 });
 
     expect(results.length).toBeGreaterThan(0);

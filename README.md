@@ -119,6 +119,26 @@ npm run lint
 npm run format
 ```
 
+### Testing
+
+Tests are split into two groups:
+
+- **Unit tests** run against mocked `fetch` and are deterministic. These run on
+  every pull request.
+
+  ```bash
+  npm run test:run
+  ```
+
+- **Live-network tests** hit Apple's real endpoints. They are **skipped by
+  default** because shared CI runner IPs get rate-limited (HTTP 429) by Apple,
+  so they run on a weekly schedule rather than gating PRs. Run them locally
+  (sets `RUN_NETWORK_TESTS=1`) with:
+
+  ```bash
+  npm run test:network
+  ```
+
 ## License
 
 MIT

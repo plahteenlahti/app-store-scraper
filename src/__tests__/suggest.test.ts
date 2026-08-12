@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { suggest } from '../lib/suggest.js';
 
 describe('suggest', () => {
@@ -9,7 +10,7 @@ describe('suggest', () => {
     ).rejects.toThrow('term is required');
   });
 
-  it('should return autocomplete suggestions for a term', { timeout: 10000 }, async () => {
+  itNetwork('should return autocomplete suggestions for a term', { timeout: 10000 }, async () => {
     const results = await suggest({ term: 'insta' });
 
     expect(Array.isArray(results)).toBe(true);
@@ -24,7 +25,7 @@ describe('suggest', () => {
     });
   });
 
-  it('should return suggestions for the requested country storefront', { timeout: 10000 }, async () => {
+  itNetwork('should return suggestions for the requested country storefront', { timeout: 10000 }, async () => {
     const results = await suggest({ term: 'wetter', country: 'de' });
 
     expect(Array.isArray(results)).toBe(true);

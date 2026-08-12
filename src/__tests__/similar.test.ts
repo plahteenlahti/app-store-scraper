@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { itNetwork } from './helpers.js';
 import { similar } from '../lib/similar.js';
 
 describe('similar', () => {
@@ -8,7 +9,7 @@ describe('similar', () => {
     ).rejects.toThrow('Either id or appId is required');
   });
 
-  it('should fetch similar apps by ID (Google Docs)', { timeout: 15000 }, async () => {
+  itNetwork('should fetch similar apps by ID (Google Docs)', { timeout: 15000 }, async () => {
     // Google Docs app ID
     const results = await similar({ id: 842842640, country: 'us' });
 
@@ -26,7 +27,7 @@ describe('similar', () => {
     }
   });
 
-  it('should fetch similar apps by bundle ID', { timeout: 15000 }, async () => {
+  itNetwork('should fetch similar apps by bundle ID', { timeout: 15000 }, async () => {
     // Google Docs bundle ID
     const results = await similar({ appId: 'com.google.Docs', country: 'us' });
 

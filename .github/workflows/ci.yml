@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      # Don't let one Node version's failure cancel and mask the others.
+      fail-fast: false
       matrix:
         node-version: [20, 22]
 
@@ -33,7 +35,10 @@ jobs:
       - name: Run typecheck
         run: npm run typecheck
 
-      - name: Run tests
+      # Unit tests only. Live-network tests hit Apple's endpoints, which
+      # rate-limit shared CI runner IPs (429), so they run on the weekly
+      # schedule instead of gating every PR. See src/__tests__/helpers.ts.
+      - name: Run unit tests
         run: npm run test:run
 
       - name: Build package

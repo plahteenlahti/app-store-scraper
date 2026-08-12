@@ -22,6 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm run test:run
+      # Full suite including live-network tests against Apple's endpoints
+      # (these are skipped on PR CI; see src/__tests__/helpers.ts).
+      - name: Run tests (including live network tests)
+        run: npm run test:network
 
