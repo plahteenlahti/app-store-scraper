@@ -97,6 +97,35 @@ const appReviews = await reviews({ id: 553834731, page: 1 });
 - `sort` - Sort options for reviews (RECENT, HELPFUL)
 - `device` - Device types (IPAD, MAC, ALL)
 
+### Request options
+
+Every method accepts `requestOptions` to control the underlying HTTP request.
+Apple rate-limits (HTTP 429) and occasionally 5xxs under load, so retries and a
+timeout are the main knobs for scraping reliably at scale:
+
+```typescript
+const app1 = await app({
+  id: 553834731,
+  requestOptions: {
+    timeout: 5000,        // abort a request after 5s (per attempt)
+    retries: 3,           // retry up to 3× on 429 / 5xx / network errors
+    retryDelay: 500,      // base backoff in ms, doubles each attempt; Retry-After wins
+    signal: controller.signal, // AbortSignal to cancel (no further retries)
+    fetch: myProxiedFetch,     // custom fetch, e.g. bound to a proxy agent
+    headers: { 'X-Custom': '1' },
+  },
+});
+```
+
+| Option | Default | Notes |
+| --- | --- | --- |
+| `timeout` | none | Milliseconds; each retry attempt gets a fresh timeout |
+| `retries` | `0` | Retries after HTTP 429, HTTP 5xx, or a network/timeout error |
+| `retryDelay` | `500` | Base backoff in ms; grows as `retryDelay * 2^attempt`. A `Retry-After` header takes precedence |
+| `signal` | none | Cancels the request; an aborted signal is never retried |
+| `fetch` | global `fetch` | Inject a proxied/instrumented fetch |
+| `headers` | — | Merged over the default headers |
+
 ## Development
 
 ```bash

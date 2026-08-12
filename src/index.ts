@@ -25,6 +25,7 @@ export type {
   Suggestion,
   PrivacyDetails,
   PrivacyType,
+  RequestOptions,
   BaseOptions,
   AppOptions,
   ListOptions,

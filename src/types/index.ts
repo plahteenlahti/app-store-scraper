@@ -7,6 +7,7 @@ export type {
   PrivacyType,
 } from './review.js';
 export type {
+  RequestOptions,
   BaseOptions,
   AppOptions,
   ListOptions,
