@@ -153,34 +153,6 @@ export type ReviewEntry = z.infer<typeof reviewEntrySchema>;
 export type ReviewsFeed = z.infer<typeof reviewsFeedSchema>;
 
 /**
- * Suggestion response schema
- */
-export const suggestDictSchema = z.object({
-  string: z.union([z.string(), z.array(z.string())]).optional(),
-});
-
-export const suggestResponseSchema = z.object({
-  plist: z
-    .object({
-      dict: z
-        .object({
-          array: z
-            .union([
-              z.string(),
-              z.object({
-                dict: z.array(suggestDictSchema).optional(),
-              }),
-            ])
-            .optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
-
-export type SuggestResponse = z.infer<typeof suggestResponseSchema>;
-
-/**
  * Privacy details schema
  */
 export const privacyTypeSchema = z.object({
