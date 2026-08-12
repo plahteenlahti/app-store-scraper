@@ -14,11 +14,13 @@ export { similar } from './lib/similar.js';
 export { suggest } from './lib/suggest.js';
 export { privacy } from './lib/privacy.js';
 export { versionHistory } from './lib/version-history.js';
+export { inAppPurchases } from './lib/in-app-purchases.js';
 
 // Export types
 export type {
   App,
   ListApp,
+  InAppPurchase,
   RatingHistogram,
   Ratings,
   Review,
@@ -38,6 +40,7 @@ export type {
   SuggestOptions,
   PrivacyOptions,
   VersionHistoryOptions,
+  InAppPurchasesOptions,
   Collection,
   Category,
   Device,

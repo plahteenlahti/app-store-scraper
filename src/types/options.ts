@@ -53,6 +53,8 @@ export interface AppOptions extends BaseOptions {
   appId?: string;
   /** Whether to include rating histogram */
   ratings?: boolean;
+  /** Whether to include the app's top in-app purchases (scrapes the App Store page) */
+  iap?: boolean;
 }
 
 /**
@@ -148,6 +150,14 @@ export interface PrivacyOptions extends Omit<BaseOptions, 'lang'> {
  * Options for the versionHistory() method
  */
 export interface VersionHistoryOptions extends Omit<BaseOptions, 'lang'> {
+  /** Track ID (required) */
+  id: number;
+}
+
+/**
+ * Options for the inAppPurchases() method
+ */
+export interface InAppPurchasesOptions extends Omit<BaseOptions, 'lang'> {
   /** Track ID (required) */
   id: number;
 }

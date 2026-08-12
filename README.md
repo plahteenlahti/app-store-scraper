@@ -44,6 +44,7 @@ Every method has been checked against Apple's current endpoints. The ones marked
 | `suggest()` | 🔧 Fixed | Repaired against Apple's current hints endpoint |
 | `privacy()` | 🔧 Fixed | Repaired privacy-details scraping |
 | `versionHistory()` | 🔧 Fixed | Repaired against Apple's current endpoint |
+| `inAppPurchases()` | 🆕 New | Scrapes the app's top in-app purchases (title + formatted price) from the App Store page |
 
 ## Installation
 
@@ -73,7 +74,7 @@ const games = await list({
 const appReviews = await reviews({ id: 553834731, page: 1 });
 ```
 
-**📖 See [examples/all-methods.ts](examples/all-methods.ts) for comprehensive examples of all 10 API methods.**
+**📖 See [examples/all-methods.ts](examples/all-methods.ts) for comprehensive examples of the API methods.**
 
 ## API
 
@@ -89,6 +90,7 @@ const appReviews = await reviews({ id: 553834731, page: 1 });
 - `suggest()` - Get search suggestions
 - `privacy()` - Get privacy policy details
 - `versionHistory()` - Get version release history
+- `inAppPurchases()` - Get the app's top in-app purchases (title + price). Also available via `app({ id, iap: true })`
 
 ### Constants
 
