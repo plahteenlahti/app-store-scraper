@@ -70,6 +70,22 @@ export interface App {
   supportedDevices: string[];
   /** Rating histogram (only if ratings option is true) */
   histogram?: RatingHistogram;
+  /** Top in-app purchases (only if the `iap` option is true) */
+  inAppPurchases?: InAppPurchase[];
+}
+
+/**
+ * A single in-app purchase listed on the App Store product page.
+ *
+ * Apple only exposes the localized display name and the formatted price string
+ * (e.g. "$1.99") on the page — there is no separate numeric amount or product
+ * identifier available here.
+ */
+export interface InAppPurchase {
+  /** Display name of the in-app purchase */
+  title: string;
+  /** Formatted, localized price (e.g. "$1.99") */
+  price: string;
 }
 
 /**

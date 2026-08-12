@@ -3,6 +3,7 @@ import type { App } from '../types/app.js';
 import type { AppOptions } from '../types/options.js';
 import { doRequest, lookup, validateRequiredField } from './common.js';
 import { ratings } from './ratings.js';
+import { inAppPurchases } from './in-app-purchases.js';
 
 /**
  * Extracts a clean screenshot URL from srcset attribute
@@ -112,12 +113,23 @@ async function scrapeScreenshots(
  *
  * // Get app with rating histogram
  * const app = await app({ id: 553834731, ratings: true });
+ *
+ * // Get app with its top in-app purchases
+ * const app = await app({ id: 553834731, iap: true });
  * ```
  */
 export async function app(options: AppOptions): Promise<App> {
   validateRequiredField(options as Record<string, unknown>, ['id', 'appId'], 'Either id or appId is required');
 
-  const { id, appId, country = 'us', lang, ratings: includeRatings, requestOptions } = options;
+  const {
+    id,
+    appId,
+    country = 'us',
+    lang,
+    ratings: includeRatings,
+    iap: includeIap,
+    requestOptions,
+  } = options;
 
   const apps = await lookup(
     (id || appId) as number,
@@ -154,6 +166,20 @@ export async function app(options: AppOptions): Promise<App> {
     } catch (error) {
       // Ratings might not be available for all apps
       // Continue without histogram rather than failing
+    }
+  }
+
+  // Optionally include top in-app purchases
+  if (includeIap) {
+    try {
+      appData.inAppPurchases = await inAppPurchases({
+        id: appData.id,
+        country,
+        requestOptions,
+      });
+    } catch (error) {
+      // In-app purchases might not be available or the page layout may change;
+      // continue without them rather than failing.
     }
   }
 
